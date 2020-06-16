@@ -1,13 +1,8 @@
 ﻿using OpenTK;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Raytracer.Tree
 {
-
     public enum SplitPlane
     {
         XY = 0,
@@ -23,10 +18,7 @@ namespace Raytracer.Tree
         Z = 2,
         NONE = -1
     }
-
-
- 
-
+    
     public struct Ray
     {
         public Vector4 Origin { get; set; }
@@ -56,6 +48,10 @@ namespace Raytracer.Tree
 
         public Vector3 BBmax { get; private set; }
 
+        public BoxAxis SplitAxis { get; private set; }
+
+        public float SplitCoord { get; private set; }
+
         public Vector3 BBSize { get { return new Vector3(BBmax.X - BBmin.X, BBmax.Y - BBmin.Y, BBmax.Z - BBmin.Z); } }
 
         public Vector3 BBSArea { get {return ComputeArea();} }
@@ -68,10 +64,6 @@ namespace Raytracer.Tree
                                size.X * size.Z,
                                size.Y * size.X);
         }
-
-        public BoxAxis SplitAxis { get; private set; }
-
-        public float SplitCoord { get; private set; }
 
         public bool RayBBoxIntersection(ref Ray ray)
         {
@@ -131,17 +123,21 @@ namespace Raytracer.Tree
             SplitCoord = 0;
         }
     }
-
-    public class KDTree
+    
+    public class KDTree : BTree<int[]>
     {
         public static readonly int MAX_BASKET_CAP = 8;
 
-        private BTree<int[]> tree;
+        private struct KDNode
+        {
+            BBox bbox;
+        }
 
         public void BuildTree()
         {
 
         }
+
         public int FindNearest()
         {
             return 0;
