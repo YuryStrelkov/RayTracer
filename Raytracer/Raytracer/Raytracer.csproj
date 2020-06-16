@@ -51,6 +51,7 @@
     <Compile Include="Model.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tree\ArrayUtils.cs" />
     <Compile Include="Tree\BTree.cs" />
     <Compile Include="Tree\GenericDeepCopy.cs" />
     <Compile Include="Tree\KDTree.cs" />
