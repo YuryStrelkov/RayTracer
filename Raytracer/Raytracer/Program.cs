@@ -1,6 +1,4 @@
-﻿using Raytracer;
-using Raytracer.Tree;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 
