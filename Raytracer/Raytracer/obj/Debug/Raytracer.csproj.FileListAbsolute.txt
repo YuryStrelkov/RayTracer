@@ -1,0 +1,9 @@
+D:\GitHub\RayTracer\Raytracer\Raytracer\bin\Debug\Raytracer.exe.config
+D:\GitHub\RayTracer\Raytracer\Raytracer\bin\Debug\Raytracer.exe
+D:\GitHub\RayTracer\Raytracer\Raytracer\bin\Debug\Raytracer.pdb
+D:\GitHub\RayTracer\Raytracer\Raytracer\bin\Debug\OpenTK.dll
+D:\GitHub\RayTracer\Raytracer\Raytracer\bin\Debug\OpenTK.pdb
+D:\GitHub\RayTracer\Raytracer\Raytracer\bin\Debug\OpenTK.xml
+D:\GitHub\RayTracer\Raytracer\Raytracer\obj\Debug\Raytracer.csprojResolveAssemblyReference.cache
+D:\GitHub\RayTracer\Raytracer\Raytracer\obj\Debug\Raytracer.exe
+D:\GitHub\RayTracer\Raytracer\Raytracer\obj\Debug\Raytracer.pdb

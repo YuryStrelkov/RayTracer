@@ -1,0 +1,12 @@
+https://habr.com/ru/post/336908/
+https://habr.com/ru/post/500914/
+https://habr.com/ru/post/498636/
+https://habr.com/ru/post/334990/
+https://github.com/boonemiller/Ray-Tracer/blob/master/RayTracer/RayTracer/bvh.cpp
+https://cglearn.codelight.eu/pub/computer-graphics/ray-tracing-space-partitioning-bvh#material-space-partitioning-1
+http://www.ray-tracing.ru/articles181.html
+http://www.ray-tracing.ru/articles184.html
+http://www.ray-tracing.ru/articles200.html
+http://www.ray-tracing.ru/articles184.html
+// образец
+https://habr.com/ru/post/187720/
