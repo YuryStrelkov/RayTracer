@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Raytracer.Model;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -59,12 +60,14 @@ namespace Raytracer
 
         static void Main(string[] args)
         {
-            TaskTestCountCheckAsync();
+            ///TaskTestCountCheckAsync();
 
-            for (int i = 0; i < MaxTasks; i++)
-            {
-                TaskTestAsync();
-            }
+            /*           for (int i = 0; i < MaxTasks; i++)
+                       {
+                           TaskTestAsync();
+                       }*/
+
+            Mesh m = new Mesh("boxes.obj");
 
             Console.ReadKey();
           

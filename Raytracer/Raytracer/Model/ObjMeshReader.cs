@@ -116,8 +116,11 @@ namespace Raytracer.Model
         public static RawMesh ReadObj(string path)
         {
             RawMesh meshes = new RawMesh();
+
             int matID = -1;
+
             string[] Lines;
+
             try
             {
                 Lines = File.ReadAllLines(path);
@@ -136,16 +139,19 @@ namespace Raytracer.Model
                     if (Lines[i].StartsWith("mtllib"))
                     {
                         ReadMaterials(Lines[i].Split(' ')[1], ref meshes);
+                        continue;
                     }
 
                     if (Lines[i].StartsWith("g"))
                     {
                         geometryName = Lines[i].Split(' ')[1];
+                        continue;
                     }
 
                     if (Lines[i].StartsWith("usemtl"))
                     {
                         matID = ReadObjMatID(ref Lines[i]);
+                        continue;
                     }
 
                     if (Lines[i].StartsWith("v"))
@@ -252,7 +258,7 @@ namespace Raytracer.Model
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 Console.WriteLine("no material found for " + path.Split('.')[0]);
             }
