@@ -153,13 +153,6 @@ namespace Raytracer.Model
                         matID = ReadObjMatID(ref Lines[i]);
                         continue;
                     }
-
-                    if (Lines[i].StartsWith("v"))
-                    {
-                        meshes.Positons.Add(ReadObjVector4(ref Lines[i]));
-                        continue;
-                    }
-
                     if (Lines[i].StartsWith("vn"))
                     {
                         meshes.Normals.Add(ReadObjVector4(ref Lines[i]));
@@ -171,6 +164,13 @@ namespace Raytracer.Model
                         meshes.Uvs.Add(ReadObjVector2(ref Lines[i]));
                         continue;
                     }
+
+                    if (Lines[i].StartsWith("v"))
+                    {
+                        meshes.Positons.Add(ReadObjVector4(ref Lines[i]));
+                        continue;
+                    }
+
                     if (Lines[i].StartsWith("f"))
                     {
                         meshes.AddFace(geometryName.GetHashCode(), ReadObjFace(ref Lines[i], matID));
@@ -182,6 +182,7 @@ namespace Raytracer.Model
             catch (Exception e)
             {
                 Console.WriteLine("File not found...");
+                Console.WriteLine(e.StackTrace);
             }
             return meshes;
         }
@@ -267,25 +268,30 @@ namespace Raytracer.Model
         private static Vector4 ReadObjVector4(ref string line)
         {
             string[] lineSplit = line.Split(' ');
-            return new Vector4(float.Parse(lineSplit[1]), float.Parse(lineSplit[2]), float.Parse(lineSplit[3]),1);
+            return new Vector4(float.Parse(lineSplit[lineSplit.Length - 3].Replace('.', ',')),
+                               float.Parse(lineSplit[lineSplit.Length - 2].Replace('.', ',')), 
+                               float.Parse(lineSplit[lineSplit.Length - 1].Replace('.', ',')),1);
         }
         
         private static Vector3 ReadObjVector3(ref string line)
         {
             string[] lineSplit = line.Split(' ');
-            return new Vector3(float.Parse(lineSplit[1]), float.Parse(lineSplit[2]), float.Parse(lineSplit[3]));
+            return new Vector3(float.Parse(lineSplit[lineSplit.Length - 3].Replace('.', ',')),
+                               float.Parse(lineSplit[lineSplit.Length - 2].Replace('.', ',')), 
+                               float.Parse(lineSplit[lineSplit.Length - 1].Replace('.', ',')));
         }
 
         private static Vector2 ReadObjVector2(ref string line)
         {
             string[] lineSplit = line.Split(' ');
-            return new Vector2(float.Parse(lineSplit[1]), float.Parse(lineSplit[2]));
+            return new Vector2(float.Parse(lineSplit[lineSplit.Length - 2].Replace('.', ',')),
+                               float.Parse(lineSplit[lineSplit.Length - 1].Replace('.', ',')));
         }
 
         private static float ReadObjFloat(ref string line)
         {
             string[] lineSplit = line.Split(' ');
-            return float.Parse(lineSplit[1]);
+            return float.Parse(lineSplit[lineSplit.Length - 1].Replace('.', ','));
         }
 
         private static int ReadObjMatID(ref string line)
@@ -300,15 +306,21 @@ namespace Raytracer.Model
 
             string[] tmp = lineSplit[1].Split('/');
 
-            VertexComponentsIndeses V1 = new VertexComponentsIndeses(int.Parse(tmp[0]), int.Parse(tmp[1]), int.Parse(tmp[2]));
+            VertexComponentsIndeses V1 = new VertexComponentsIndeses(Math.Abs(int.Parse(tmp[0])),
+                                                                     Math.Abs(int.Parse(tmp[1])),
+                                                                     Math.Abs(int.Parse(tmp[2])));
 
             tmp = lineSplit[2].Split('/');
 
-            VertexComponentsIndeses V2 = new VertexComponentsIndeses(int.Parse(tmp[0]), int.Parse(tmp[1]), int.Parse(tmp[2]));
+            VertexComponentsIndeses V2 = new VertexComponentsIndeses(Math.Abs(int.Parse(tmp[0])),
+                                                                     Math.Abs(int.Parse(tmp[1])),
+                                                                     Math.Abs(int.Parse(tmp[2])));
 
             tmp = lineSplit[3].Split('/');
 
-            VertexComponentsIndeses V3 = new VertexComponentsIndeses(int.Parse(tmp[0]), int.Parse(tmp[1]), int.Parse(tmp[2]));
+            VertexComponentsIndeses V3 = new VertexComponentsIndeses(Math.Abs(int.Parse(tmp[0])),
+                                                                     Math.Abs(int.Parse(tmp[1])),
+                                                                     Math.Abs(int.Parse(tmp[2])));
 
             return new ObjFace(V1,V2,V3,matID);
         }
