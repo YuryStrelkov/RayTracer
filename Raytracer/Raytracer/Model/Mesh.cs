@@ -88,7 +88,7 @@ namespace Raytracer.Model
         private void LoadModel(string src)
         {
             RawMesh mesh = ReadObj(src);
-            
+            Console.WriteLine(mesh.ToString());
             Parallel.ForEach(mesh.Faces, (KVpair) => 
             {
                 foreach (ObjFace face in mesh.Faces[KVpair.Key])
