@@ -10,22 +10,22 @@ namespace Raytracer.Model
     {
         public struct VertexComponentsIndeses
         {
-            public int positionID;
+            public int PositionID;
 
-            public int normalID;
+            public int NormalID;
 
             public int UVID;
 
 
             public override string ToString()
             {
-                return positionID.ToString() + "/" + UVID.ToString() + "/"+ normalID.ToString();
+                return PositionID.ToString() + "/" + UVID.ToString() + "/"+ NormalID.ToString();
             }
 
-            public VertexComponentsIndeses(int p, int n, int uv)
+            public VertexComponentsIndeses(int p, int uv, int n)
             {
-                positionID = p;
-                normalID = n;
+                PositionID = p;
+                NormalID = n;
                 UVID = uv;
             }
         }
@@ -58,11 +58,11 @@ namespace Raytracer.Model
 
         public class RawMesh
         {
-            public List<Vector4> Positons;/// = new List<Vector4>();
+            public Dictionary<int, List<Vector4>> Positons;/// = new List<Vector4>();
 
-            public List<Vector4> Normals;/// = new List<Vector4>();
+            public Dictionary<int, List<Vector4>> Normals;/// = new List<Vector4>();
 
-            public List<Vector2> Uvs;/// = new List<Vector2>();
+            public Dictionary<int, List<Vector2>> Uvs;/// = new List<Vector2>();
 
             public Dictionary<int, List<ObjFace>> Faces { get; private set; }/// = new List<ObjFace>();
 
@@ -72,28 +72,32 @@ namespace Raytracer.Model
             public override string ToString()
             {
                 StringBuilder sb = new StringBuilder();
-
-                sb.Append("# " + Positons.Count.ToString() + " vertices\n");
-                for (int i = 0; i < Positons.Count; i++)
-                {
-                    sb.Append("v " + Positons[i].Xyz.ToString()+ "\n");
-                }
-                sb.Append("# " + Normals.Count.ToString() + " normals\n");
-
-                for (int i = 0; i < Normals.Count; i++)
-                {
-                    sb.Append("vn " + Normals[i].Xyz.ToString() + "\n");
-                }
-
-                sb.Append("# " + Uvs.Count.ToString() + " uvs\n");
-                for (int i = 0; i < Uvs.Count; i++)
-                {
-                    sb.Append("v " + Uvs[i].ToString()+ "\n");
-                }
-
+                
                 foreach (int id in Faces.Keys)
                 {
+                    sb.Append("\n");
                     sb.Append("g "+id.ToString()+ "\n");
+                    sb.Append("\n");
+                    sb.Append("# " + Positons[id].Count.ToString() + " vertices\n");
+
+                    for (int i = 0; i < Positons[id].Count; i++)
+                    {
+                        sb.Append("v " + Positons[id][i].Xyz.ToString() + "\n");
+                    }
+                    sb.Append("# " + Normals[id].Count.ToString() + " normals\n");
+
+                    for (int i = 0; i < Normals[id].Count; i++)
+                    {
+                        sb.Append("vn " + Normals[id][i].Xyz.ToString() + "\n");
+                    }
+
+                    sb.Append("# " + Uvs[id].Count.ToString() + " uvs\n");
+
+                    for (int i = 0; i < Uvs[id].Count; i++)
+                    {
+                        sb.Append("v " + Uvs[id][i].ToString() + "\n");
+                    }
+
                     for (int i = 0; i < Faces[id].Count; i++)
                     {
                         sb.Append(Faces[id][i].ToString()+ "\n");
@@ -101,12 +105,6 @@ namespace Raytracer.Model
                 }
                 return sb.ToString();
             }
-
-            private int PositonsOfset = 0;
-
-            private int NormalsOfset = 0;
-
-            private int UvsOfset = 0;
 
             public void AddMaterial(int matID,MeshMaterial mat)
             {
@@ -126,35 +124,15 @@ namespace Raytracer.Model
                 if (!Faces.ContainsKey(geomety))
                 {
                     Faces.Add(geomety, new List<ObjFace>());
-                    //смещение инедксов геометрии
-                    PositonsOfset = Positons.Count;
-
-                    NormalsOfset = Normals.Count;
-
-                    UvsOfset = Uvs.Count;
                  }
-
-                //смещение инедксов фейса
-                face.V1.positionID += PositonsOfset;
-                face.V1.normalID += NormalsOfset;
-                face.V1.UVID += UvsOfset;
-
-                face.V2.positionID += PositonsOfset;
-                face.V2.normalID += NormalsOfset;
-                face.V2.UVID += UvsOfset;
-
-                face.V3.positionID += PositonsOfset;
-                face.V3.normalID += NormalsOfset;
-                face.V3.UVID += UvsOfset;
-
                 Faces[geomety].Add(face);
             }
 
             public RawMesh()
             {
-                Positons = new List<Vector4>();
-                Normals = new List<Vector4>();
-                Uvs = new List<Vector2>();
+                Positons = new Dictionary<int, List<Vector4>>();
+                Normals = new Dictionary<int, List<Vector4>>();
+                Uvs = new Dictionary<int, List<Vector2>>();
                 Faces = new Dictionary<int, List<ObjFace>>();
                 Materials = new Dictionary<int, MeshMaterial>();
             }
@@ -185,12 +163,17 @@ namespace Raytracer.Model
             {
                 Lines = File.ReadAllLines(path);
 
-                int geometryID = -1;
+                int geometryID = -1;// если файл не содержит явного указания имени геометрии, то не меняется 
+
+                List<Vector4> tmpPositions = new List<Vector4>();
+
+                List<Vector4> tmpNormals = new List<Vector4>();
+
+                List<Vector2> tmpUVs = new List<Vector2>();
 
                 for (int i = 0; i < Lines.Length; i++)
                 {
       
-
                     if (Lines[i].StartsWith("#"))
                     {
                         continue;
@@ -205,6 +188,15 @@ namespace Raytracer.Model
                     if (Lines[i].StartsWith("g"))
                     {
                         geometryID = Lines[i].Split(' ')[1].GetHashCode();
+
+                        meshes.Normals.Add(geometryID, tmpNormals);
+                        meshes.Positons.Add(geometryID, tmpPositions);
+                        meshes.Uvs.Add(geometryID, tmpUVs);
+
+                        tmpNormals = new List<Vector4>();
+                        tmpPositions = new List<Vector4>();
+                        tmpUVs = new List<Vector2>();
+
                         continue;
                     }
 
@@ -215,19 +207,19 @@ namespace Raytracer.Model
                     }
                     if (Lines[i].StartsWith("vn"))
                     {
-                        meshes.Normals.Add(ReadObjVector4(ref Lines[i]));
+                        tmpNormals.Add(ReadObjVector4(ref Lines[i]));
                         continue;
                     }
 
                     if (Lines[i].StartsWith("vt"))
                     {
-                        meshes.Uvs.Add(ReadObjVector2(ref Lines[i]));
+                        tmpUVs.Add(ReadObjVector2(ref Lines[i]));
                         continue;
                     }
 
                     if (Lines[i].StartsWith("v"))
                     {
-                        meshes.Positons.Add(ReadObjVector4(ref Lines[i]));
+                        tmpPositions.Add(ReadObjVector4(ref Lines[i]));
                         continue;
                     }
 
@@ -237,7 +229,12 @@ namespace Raytracer.Model
                         continue;
                     }
                 }
-
+                if (geometryID == -1)
+                {
+                    meshes.Normals.Add(geometryID, tmpNormals);
+                    meshes.Positons.Add(geometryID, tmpPositions);
+                    meshes.Uvs.Add(geometryID, tmpUVs);
+                }
             }
             catch (Exception e)
             {
@@ -382,7 +379,7 @@ namespace Raytracer.Model
                                                                      Math.Abs(int.Parse(tmp[1])) - 1,
                                                                      Math.Abs(int.Parse(tmp[2])) - 1);
             ObjFace f = new ObjFace(V1, V2, V3, matID);
-            Console.WriteLine(f.ToString());
+          
             return f;
         }
 

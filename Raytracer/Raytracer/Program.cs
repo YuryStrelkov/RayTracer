@@ -67,6 +67,8 @@ namespace Raytracer
                            TaskTestAsync();
                        }*/
 
+            Material m_ = new Material("pic.png", "pic.png", "pic.png", "pic.png");
+
             Mesh m = new Mesh("boxes.obj");
 
             Console.ReadKey();
