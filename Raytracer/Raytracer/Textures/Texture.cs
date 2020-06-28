@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
- 
+using System.Threading.Tasks;
 
 namespace Raytracer.Textures
 {
@@ -177,17 +177,33 @@ namespace Raytracer.Textures
             {
                 using (Bitmap bm = new Bitmap(src))
                 {
+                    BitmapData bmData = bm.LockBits(new Rectangle(0, 0, bm.Width, bm.Height), ImageLockMode.ReadWrite, bm.PixelFormat);
+
                     Coloms = bm.Width;
 
                     Rows = bm.Height;
 
-                    MemoryStream ms = new MemoryStream();
+                    Stride = bmData.Stride;
 
-                    bm.Save(ms, ImageFormat.Png);
+                    Pixels = new byte[Stride * Rows];
 
-                    Stride = (int)ms.Length / Rows;
+                    unsafe
+                    {
+                        byte* pntr = (byte*)bmData.Scan0.ToPointer();
 
-                    Pixels = ms.ToArray();
+                        Parallel.For(0, Rows, (row) =>
+                        {
+                            int index = row * Stride;
+
+                            for (int col = 0; col < Coloms; col++)
+                            {
+                                Pixels[index + col * 3]     = *pntr;
+                                Pixels[index + col * 3 + 1] = *(pntr + 1);
+                                Pixels[index + col * 3 + 2] = *(pntr + 2);
+                            }
+                        });
+                    }
+
                 }
             }
             catch (Exception e)
