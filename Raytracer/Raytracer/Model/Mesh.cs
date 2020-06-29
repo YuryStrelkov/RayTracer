@@ -15,13 +15,7 @@ namespace Raytracer.Model
         Dictionary<int,Vertex> Vertices;
 
         List<Face> Faces;
-
-        Matrix4 Scale;
-
-        Matrix4 Rotation;
-
-        Matrix4 Translate;
-
+        
         public void AppendFace(Vertex v1, Vertex v2, Vertex v3)
         {
             lock (mutex)
