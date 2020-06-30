@@ -9,7 +9,7 @@ namespace Raytracer.Tree
     /// </summary>
     public static class ArrayUtils
     {
-        public static void ForEach<T>(this IList<T> array, Func<T, T> mutator)
+        public static void ChangeEach<T>(this IList<T> array, Func<T, T> mutator)
         {
             
             Parallel.For(0, array.Count, index =>
@@ -20,10 +20,35 @@ namespace Raytracer.Tree
 
         public static void ChangeEach<T>(this IList<T> array, Func<T, T> mutator, int ofset)
         {
-            Parallel.For(0, array.Count, index =>
+            if (array.Count % ofset!=0)
             {
-                array[index] = mutator(array[index]);
-                index += ofset;
+                return;
+            }
+
+            Parallel.For(0, array.Count/ofset, index =>
+            {
+                array[index * ofset]     = mutator(array[index * ofset]);
+                array[index * ofset + 1] = mutator(array[index * ofset + 1]);
+                array[index * ofset + 1] = mutator(array[index * ofset + 2]);
+            });
+        }
+
+        public static void FillByPattern<T>(this IList<T> array, T[] pattern)
+        {
+            if (array.Count % pattern.Length != 0)
+            {
+                return;
+            }
+
+            Parallel.For(0, array.Count / pattern.Length, index =>
+            {
+                int idx = index * pattern.Length;
+
+                for (int i=0;i<pattern.Length ;i++)
+                {
+                    array[idx + i] = pattern[i];
+                }
+               
             });
         }
 

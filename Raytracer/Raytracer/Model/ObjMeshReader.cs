@@ -42,10 +42,10 @@ namespace Raytracer.Model
 
             public override string ToString()
             {
-                return "f "+ V1.ToString()+" " + V2.ToString()+" " + V3.ToString() ;
+                return "f " + V1.ToString() + " " + V2.ToString() + " " + V3.ToString() ;
             }
 
-            public ObjFace(VertexComponentsIndeses v1, VertexComponentsIndeses v2, VertexComponentsIndeses v3,int _MatID)
+            public ObjFace(VertexComponentsIndeses v1, VertexComponentsIndeses v2, VertexComponentsIndeses v3, int _MatID)
             {
                 V1 = v1;
                 V2 = v2;
@@ -53,8 +53,6 @@ namespace Raytracer.Model
                 MatID = _MatID;
             }
         }
-
-
 
         public class RawMesh
         {
@@ -76,7 +74,7 @@ namespace Raytracer.Model
                 foreach (int id in Faces.Keys)
                 {
                     sb.Append("\n");
-                    sb.Append("g "+id.ToString()+ "\n");
+                    sb.Append("g " + id.ToString() + "\n");
                     sb.Append("\n");
                     sb.Append("# " + Positons[id].Count.ToString() + " vertices\n");
 
@@ -100,7 +98,7 @@ namespace Raytracer.Model
 
                     for (int i = 0; i < Faces[id].Count; i++)
                     {
-                        sb.Append(Faces[id][i].ToString()+ "\n");
+                        sb.Append(Faces[id][i].ToString() + "\n");
                     }
                 }
                 return sb.ToString();

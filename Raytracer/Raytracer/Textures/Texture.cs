@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Raytracer.Tree;
 
 namespace Raytracer.Textures
 {
@@ -57,7 +57,7 @@ namespace Raytracer.Textures
     [Serializable]
     public class Texture
     {
-        private object mutex;
+        private object SyncObj;
 
         public byte[] Pixels { get; private set; }
 
@@ -78,9 +78,9 @@ namespace Raytracer.Textures
             {
                 return;
             }
-            lock (mutex)
+            lock (SyncObj)
             {
-                 BitmapData picData = bm.LockBits(new Rectangle(0, 0, bm.Width, bm.Height), ImageLockMode.ReadWrite, bm.PixelFormat);
+                BitmapData picData = bm.LockBits(new Rectangle(0, 0, bm.Width, bm.Height), ImageLockMode.ReadWrite, bm.PixelFormat);
 
                 int stride = picData.Stride;
 
@@ -90,11 +90,11 @@ namespace Raytracer.Textures
 
                 bm.UnlockBits(picData);
             }
-       }
+        }
 
         public Bitmap ToBitmap()
         {
-            lock (mutex)
+            lock (SyncObj)
             {
                 Bitmap bm = new Bitmap(Rows, Coloms, PixelFormat.Format24bppRgb);
 
@@ -131,6 +131,12 @@ namespace Raytracer.Textures
             return new PixelColor(Pixels[pixIndex], Pixels[pixIndex + 1], Pixels[pixIndex + 2]);
         }
 
+
+        public void ClearTexture()
+        {
+            Pixels.ChangeEach(x => 0);
+        }
+
         public void SetPixel(float px, float py, PixelColor color)
         {
             SetPixel(px, py, color.R, color.G, color.B);
@@ -149,7 +155,7 @@ namespace Raytracer.Textures
 
             int idx = (int)(py * (Rows - 1)) * Stride + (int)(px * (Coloms - 1));
 
-            lock (mutex)
+            lock (SyncObj)
             {
                 Pixels[idx] = r;
                 Pixels[idx + 1] = g;
@@ -160,14 +166,22 @@ namespace Raytracer.Textures
 
         public Texture(float r, float g, float b)
         {
-            mutex = new object();
+            SyncObj = new object();
+
             Pixels = new byte[4];
+
             Pixels[0] = (byte)(255 * r);
+
             Pixels[1] = (byte)(255 * g);
+
             Pixels[2] = (byte)(255 * b);
+
             Stride = 4;
+
             Coloms = 1;
+
             Rows = 1;
+
             Format = new PixFormat(3, sizeof(byte));
         }
 
@@ -222,14 +236,54 @@ namespace Raytracer.Textures
             }
         }
 
+        public Texture(int w, int h)
+        {
+            Format = new PixFormat(3, sizeof(byte));
+
+            int stride = w * Format.Channels* Format.ChannelSize;
+
+            stride = stride + stride % 4;
+
+            Pixels = new byte[stride * h];
+
+            SyncObj = new object();
+
+            Coloms = w;
+
+            Rows = h;
+        }
+
+        public Texture(int w, int h, PixFormat format)
+        {
+            Format = format;
+
+            int stride = w * Format.Channels * Format.ChannelSize;
+
+            stride = stride + stride % 4;
+
+            Pixels = new byte[stride * h];
+
+            SyncObj = new object();
+
+            Coloms = w;
+
+            Rows = h;
+        }
+
         public Texture(string src)
         {
             Pixels = new byte[1];
+
             Stride = 0;
+
             Coloms = 0;
+
             Rows = 0;
-            mutex = new object();
+
+            SyncObj = new object();
+
             Format = new PixFormat(3, sizeof(byte));
+
             LoadTexture(src);
         }
     }
