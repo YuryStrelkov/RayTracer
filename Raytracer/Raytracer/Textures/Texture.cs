@@ -40,17 +40,27 @@ namespace Raytracer.Textures
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct PixFormat
-    {
+    {   
+        /// <summary>
+        /// Number of channels
+        /// </summary>
         public int Channels { get; private set; }
+  
+        /// <summary>
+        /// Bits per pixel channel
+        /// </summary>
+        public int BPPChannel { get; private set; }
+  
+        /// <summary>
+        /// Pixel size in bits
+        /// </summary>
+        public int PixelBitsSize { get; private set; }
 
-        public int ChannelSize { get; private set; }
-
-        public int PixelByteSize { get { return Channels * ChannelSize; } }
-
-        public PixFormat(int channels, int channelSize)
+        public PixFormat(int channels, int bpp)
         {
             Channels = channels;
-            ChannelSize = channelSize;
+            BPPChannel = bpp;
+            PixelBitsSize = channels * bpp;
         }
     }
 
@@ -67,6 +77,17 @@ namespace Raytracer.Textures
 
         public int Rows { get; private set; }
 
+        private int CalcStride(int w,int bytesPerPix)
+        {
+            int strtide = w * bytesPerPix;
+
+            if (strtide % 4 != 0)
+            {
+                strtide = strtide + 4 - strtide % 4;
+            }
+            return strtide;
+        }
+
         public void ToBitmap(ref Bitmap bm)
         {
             if (bm.Width != Coloms)
@@ -81,8 +102,6 @@ namespace Raytracer.Textures
             lock (SyncObj)
             {
                 BitmapData picData = bm.LockBits(new Rectangle(0, 0, bm.Width, bm.Height), ImageLockMode.ReadWrite, bm.PixelFormat);
-
-                int stride = picData.Stride;
 
                 IntPtr pixel = picData.Scan0;
 
@@ -99,8 +118,6 @@ namespace Raytracer.Textures
                 Bitmap bm = new Bitmap(Rows, Coloms, PixelFormat.Format24bppRgb);
 
                 BitmapData picData = bm.LockBits(new Rectangle(0, 0, bm.Width, bm.Height), ImageLockMode.ReadWrite, bm.PixelFormat);
-
-                int stride = picData.Stride;
 
                 IntPtr pixel = picData.Scan0;
 
@@ -130,7 +147,6 @@ namespace Raytracer.Textures
 
             return new PixelColor(Pixels[pixIndex], Pixels[pixIndex + 1], Pixels[pixIndex + 2]);
         }
-
 
         public void ClearTexture()
         {
@@ -182,12 +198,78 @@ namespace Raytracer.Textures
 
             Rows = 1;
 
-            Format = new PixFormat(3, sizeof(byte));
+            Format = new PixFormat(3, 8);
+        }
+
+        private PixFormat GetPixelFormat(PixelFormat pf)
+        {
+            if (PixelFormat.Format16bppArgb1555 == pf)
+            {
+                return new PixFormat(4,4);
+            }
+
+            if (PixelFormat.Format16bppRgb555 == pf)
+            {
+                return new PixFormat(4, 4);
+            }
+
+            if (PixelFormat.Format16bppGrayScale == pf)
+            {
+                return new PixFormat(4, 4);
+            }
+
+            if (PixelFormat.Format16bppRgb565 == pf)
+            {
+                return new PixFormat(4, 4);
+            }
+
+            if (PixelFormat.Format24bppRgb == pf)
+            {
+                return new PixFormat(3, 8);
+            }
+
+            if (PixelFormat.Format32bppArgb == pf)
+            {
+                return new PixFormat(4, 8);
+            }
+
+            if (PixelFormat.Format32bppRgb == pf)
+            {
+                return new PixFormat(4, 8);
+            }
+
+            if (PixelFormat.Format48bppRgb == pf)
+            {
+                return new PixFormat(3, 16);
+            }
+
+            if (PixelFormat.Format4bppIndexed == pf)
+            {
+                return new PixFormat(1, 4);
+            }
+
+            if (PixelFormat.Format64bppArgb == pf)
+            {
+                return new PixFormat(4, 16);
+            }
+
+            if (PixelFormat.Format8bppIndexed == pf)
+            {
+                return new PixFormat(1, 8);
+            }
+            
+            if (PixelFormat.Format1bppIndexed == pf)
+            {
+                return new PixFormat(1, 1);
+            }
+
+            return new PixFormat(3, 8);
+
         }
 
         public void LoadTexture(string src)
         {
-            try
+             try
             {
                 using (Bitmap bm = new Bitmap(src))
                 {
@@ -197,7 +279,9 @@ namespace Raytracer.Textures
 
                     Rows = bm.Height;
 
-                    Stride = bmData.Stride;
+                    Format = GetPixelFormat(bm.PixelFormat);
+
+                    Stride = CalcStride(Coloms, 3);
 
                     Pixels = new byte[Stride * Rows];
 
@@ -205,28 +289,70 @@ namespace Raytracer.Textures
                     {
                         byte* pntr = (byte*)bmData.Scan0.ToPointer();
 
-                        Parallel.For(0, Rows, (row) =>
+                        if (bm.Palette.Entries.Length != 0)
                         {
+                            Color[] colors = bm.Palette.Entries;
+
+                            Parallel.For(0, Rows, (row) =>
+                            {
+                                    int paletteInex = 0;
+
+                                    int index =  row * Stride;
+                                
+                                    int ptrIdx = row * bmData.Stride;
+
+                                        for (int col = 0; col < Coloms; col++)
+                                        {
+                                             paletteInex = pntr[ptrIdx++] >> (Format.PixelBitsSize % 8);
+
+                                             Pixels[index++] = colors[paletteInex].B;
+
+                                             Pixels[index++] = colors[paletteInex].G;
+
+                                             Pixels[index++] = colors[paletteInex].R;
+                                        }
+                              });
+
+                            bm.UnlockBits(bmData);
+
+                            return;
+                        }
+
+                        Parallel.For(0, Rows, (row) =>
+                       {
                             int index = row * Stride;
 
                             for (int col = 0; col < Coloms; col++)
                             {
-                                Pixels[index + col * 3]     = *pntr;
-                                Pixels[index + col * 3 + 1] = *(pntr + 1);
-                                Pixels[index + col * 3 + 2] = *(pntr + 2);
-                            }
-                        });
+
+                                Pixels[index] = *(pntr + index);
+
+                                index++;
+
+                                Pixels[index] = *(pntr + index);
+
+                                index++;
+
+                                Pixels[index] = *(pntr + index);
+
+                                index++;
+
+                           }
+                       });
+
+                        bm.UnlockBits(bmData);
                     }
 
                 }
             }
+
             catch (Exception e)
             {
                 Console.WriteLine("Error occured while texture : " + src + " creation...");
 
                 Pixels = new byte[4];
 
-                Pixels[0] = (255);
+                Pixels[2] = (255);
 
                 Stride = 4;
 
@@ -238,13 +364,11 @@ namespace Raytracer.Textures
 
         public Texture(int w, int h)
         {
-            Format = new PixFormat(3, sizeof(byte));
+            Format = new PixFormat(3, sizeof(byte)*8);
+            
+            Stride = CalcStride(w, 3);
 
-            int stride = w * Format.Channels* Format.ChannelSize;
-
-            stride = stride + stride % 4;
-
-            Pixels = new byte[stride * h];
+            Pixels = new byte[Stride * h];
 
             SyncObj = new object();
 
@@ -257,11 +381,9 @@ namespace Raytracer.Textures
         {
             Format = format;
 
-            int stride = w * Format.Channels * Format.ChannelSize;
+            Stride = CalcStride(w, 3);
 
-            stride = stride + stride % 4;
-
-            Pixels = new byte[stride * h];
+            Pixels = new byte[Stride * h];
 
             SyncObj = new object();
 

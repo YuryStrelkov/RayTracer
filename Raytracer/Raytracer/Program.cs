@@ -1,6 +1,8 @@
 ﻿using Raytracer.Model;
 using Raytracer.Model.SpecificModels;
+using Raytracer.Textures;
 using System;
+using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -68,10 +70,18 @@ namespace Raytracer
                            TaskTestAsync();
                        }*/
 
-            Material m_ = new Material("pic.png", "pic.png", "pic.png", "pic.png");
+            Texture t = new Texture("checkerboard-rainbow.png");
+ 
+            //Texture t = new Texture("red.png");
 
-            Mesh m = new Mesh("boxes.obj");
+            Bitmap bmp = t.ToBitmap();
 
+            bmp.Save("1_.png");
+
+            //   Material m_ = new Material("pic.png", "pic.png", "pic.png", "pic.png");
+
+            /// Mesh m = new Mesh("boxes.obj");
+            Console.WriteLine("done...");
             Console.ReadKey();
           
         }

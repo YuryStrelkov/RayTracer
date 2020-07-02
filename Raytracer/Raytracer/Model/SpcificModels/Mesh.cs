@@ -73,7 +73,7 @@ namespace Raytracer.Model.SpecificModels
               }
               );
             }
-            Console.WriteLine(ToString());
+          ///  Console.WriteLine(ToString());
         }
 
         private void BuildModelTree()
