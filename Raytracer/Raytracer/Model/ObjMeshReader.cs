@@ -54,8 +54,6 @@ namespace Raytracer.Model
             }
         }
 
-
-
         public class RawMesh
         {
             public Dictionary<int, List<Vector4>> Positons;/// = new List<Vector4>();
