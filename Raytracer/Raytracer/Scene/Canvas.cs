@@ -20,16 +20,10 @@ namespace Raytracer.Scene
 
         private Matrix4 view;
 
-        private Matrix4 translation;
-
-        public Matrix4 Translation { get { return translation; } }
-
         public Matrix4 View { get { return view; } }
 
         public Matrix4 Projection { get; private set; }
 
-        public Matrix4 CameraTransform { get { return translation * view; } }
- 
         public void Rotate(float vertical, float horizontal)
         {
             vertical = MathHelper.Clamp(vertical, -3, 3);
@@ -37,34 +31,34 @@ namespace Raytracer.Scene
             Vector3 forward = new Vector3((float)(Math.Sin(horizontal) * Math.Sin(vertical)),
                                           (float) Math.Cos(vertical),
                                           (float)(Math.Cos(horizontal) * Math.Sin(vertical)));
+            forward.Normalize();
 
-            Vector3 left = Vector3.Cross(Vector3.UnitZ, forward);
+            Vector3 right = Vector3.Cross(Vector3.UnitY, forward);
 
-            left.Normalize();
-
-            Vector3 up = Vector3.Cross(left, forward);
-
-            view.M11 = forward.X;
-            view.M21 = forward.Y;
-            view.M31 = forward.Z;
-
-            view.M12 = left.X;
-            view.M22 = left.Y;
-            view.M32 = left.Z;
-
-            view.M13 = up.X;
-            view.M23 = up.Y;
-            view.M33 = up.Z;
+            right.Normalize();
             
+            Vector3 up = Vector3.Cross(forward,right);
+
+            view.M13 = right.X;
+            view.M23 = right.Y;
+            view.M33 = right.Z;
+
+            view.M12 = up.X;
+            view.M22 = up.Y;
+            view.M32 = up.Z;
+
+            view.M13 = forward.X;
+            view.M23 = forward.Y;
+            view.M33 = forward.Z;
         }
 
         public void Move(Vector3 pos)
         {
-            translation.M14 += pos.X;
+            view.M14 += pos.X;
 
-            translation.M24 += pos.Y;
+            view.M24 += pos.Y;
 
-            translation.M34 += pos.Z;
+            view.M34 += pos.Z;
         }
 
         public Ray GetViewRay(float x, float y)//x and y belongs [-1,1];
@@ -75,11 +69,11 @@ namespace Raytracer.Scene
 
             orig = View * orig;
 
-            orig.X += translation.M14;
+            orig.X += view.M14;
 
-            orig.Y += translation.M24;
+            orig.Y += view.M24;
 
-            orig.Z += translation.M34;
+            orig.Z += view.M34;
 
             return new Ray(orig.Xyz, dir.Xyz);
         }
@@ -90,20 +84,12 @@ namespace Raytracer.Scene
 
             Aspect = aspect;
 
-            view = new Matrix4(1,0,0,0,
-                               0,1,0,0,
-                               0,0,1,0,
-                               0,0,0,1);
+            view = new Matrix4(1, 0, 0, orig.X,
+                               0, 1, 0, orig.Y,
+                               0, 0, 1, orig.Z,
+                               0, 0, 0, 1);
 
             Projection =  Matrix4.CreatePerspectiveFieldOfView(fov_, aspect, 0.1f, 100000);
-
-            translation = new Matrix4();
-
-            translation.M14 = orig.X;
-
-            translation.M24 = orig.Y;
-
-            translation.M34 = orig.Z;
         }
     }
 

@@ -9,17 +9,15 @@ namespace Raytracer.Model.SpecificModels
     {
         public float Radius { get; set; }
 
-        public Vector4 Origin { get; set; }
-        
         public override PixelColor IntersectionColor(ref Ray ray)
         {
             float tmax, tmin;
 
-            if (ray.SphereIntersection(out tmin, out tmax, Radius, Origin.Xyz))
+            if (ray.SphereIntersection(out tmin, out tmax, Radius, GetTransform().GetOrigin()))
             {
                 ray.Length = tmin;
 
-                Vector3 n = ray.Origin + ray.Direction * tmin - Origin.Xyz;
+                Vector3 n = ray.Origin + ray.Direction * tmin - GetTransform().GetOrigin();
 
                 n.Normalize();
 
@@ -34,12 +32,15 @@ namespace Raytracer.Model.SpecificModels
         
         public override void LoadModel(string src)
         {
-            
+            if (src.StartsWith("sphere"))
+            {
+                string [] srcsplit = src.Split(' ');
+            }
         }
 
         public override void OnCamSpace(Camera cam, out Vector2 LU, out Vector2 RD)
         {
-            Matrix4 tmp = cam.Projection * cam.CameraTransform;
+            Matrix4 tmp = cam.Projection * cam.View;
 
             Vector4 maxB = tmp * new Vector4(GetTransform().GetOrigin().X + Radius, GetTransform().GetOrigin().Y + Radius, GetTransform().GetOrigin().Z + Radius, 1);
 
@@ -53,7 +54,8 @@ namespace Raytracer.Model.SpecificModels
         public Sphere(float R, Vector3 orig):base()
         {
             Radius = R;
-            Origin = new Vector4(orig.X, orig.Y, orig.Z, 1);
+
+            GetTransform().Translation(orig.X, orig.Y, orig.Z);
         }
     }
 }
