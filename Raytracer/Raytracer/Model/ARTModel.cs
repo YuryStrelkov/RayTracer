@@ -2,6 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Raytracer.Textures;
+using Raytracer.Scene;
 
 namespace Raytracer.Model
 {
@@ -496,6 +497,8 @@ namespace Raytracer.Model
         {
             return t;
         }
+
+        public abstract void OnCamSpace(Camera cam, out Vector2 LU, out Vector2 RD);
 
         public abstract void LoadModel(string src);
 

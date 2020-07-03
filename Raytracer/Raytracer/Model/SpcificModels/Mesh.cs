@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using static Raytracer.Model.ObjMeshReader;
+using Raytracer.Scene;
 
 namespace Raytracer.Model.SpecificModels
 {
@@ -149,7 +150,12 @@ namespace Raytracer.Model.SpecificModels
 
             return new PixelColor(0,0,0);
         }
- 
+
+        public override void OnCamSpace(Camera cam, out Vector2 LU, out Vector2 RD)
+        {
+            throw new NotImplementedException();
+        }
+
         public Mesh() : base()
         {
             Vertices = new Dictionary<int, Vertex>();

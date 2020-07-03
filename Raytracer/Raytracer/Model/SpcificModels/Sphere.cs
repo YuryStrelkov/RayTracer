@@ -1,5 +1,7 @@
 ﻿using Raytracer.Textures;
 using OpenTK;
+using Raytracer.Scene;
+using System;
 
 namespace Raytracer.Model.SpecificModels
 {
@@ -34,6 +36,20 @@ namespace Raytracer.Model.SpecificModels
         {
             
         }
+
+        public override void OnCamSpace(Camera cam, out Vector2 LU, out Vector2 RD)
+        {
+            Matrix4 tmp = cam.Projection * cam.CameraTransform;
+
+            Vector4 maxB = tmp * new Vector4(GetTransform().GetOrigin().X + Radius, GetTransform().GetOrigin().Y + Radius, GetTransform().GetOrigin().Z + Radius, 1);
+
+            Vector4 minB = tmp * new Vector4(GetTransform().GetOrigin().X - Radius, GetTransform().GetOrigin().Y - Radius, GetTransform().GetOrigin().Z - Radius, 1);
+
+            LU = new Vector2(Math.Min(maxB.X, minB.X), Math.Min(maxB.Y, minB.Y));
+
+            RD = new Vector2(Math.Max(maxB.X, minB.X), Math.Max(maxB.Y, minB.Y));
+        }
+
         public Sphere(float R, Vector3 orig):base()
         {
             Radius = R;

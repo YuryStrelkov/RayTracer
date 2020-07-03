@@ -1,10 +1,14 @@
-﻿using OpenTK;
+﻿using System;
+using OpenTK;
+using Raytracer.Scene;
 using Raytracer.Textures;
- 
+
 namespace Raytracer.Model.SpcificModels
 {
     public class Surface : ARTModel
     {
+        public static float MaxClipDistance = 10000;
+
         public float D { get; set; }
 
         public Vector4 ABC { get; set; }
@@ -27,6 +31,11 @@ namespace Raytracer.Model.SpcificModels
         public override void LoadModel(string src)
         {
 
+        }
+
+        public override void OnCamSpace(Camera cam, out Vector2 LU, out Vector2 RD)
+        {
+        
         }
 
         public Surface(float shiftAlongNormal, Vector3 surfNormal):base()

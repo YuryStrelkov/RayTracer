@@ -18,12 +18,13 @@ namespace Raytracer.Scene
         
         private void ResolveToBitmap(ref Bitmap bmp)
         {
+            canvas.ResolveToBitmap(ref bmp);
         }
 
         public void Draw(ref Bitmap bmp)
         {
             Update();
-            canvas.Render(models, cam);
+            //canvas.Render(models, cam);
             ResolveToBitmap(ref bmp);
         }
 
