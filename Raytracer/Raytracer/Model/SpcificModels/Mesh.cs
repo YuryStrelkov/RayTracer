@@ -5,20 +5,19 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using static Raytracer.Model.ObjMeshReader;
+using Raytracer.Scene;
 
-namespace Raytracer.Model
+namespace Raytracer.Model.SpecificModels
 {
-     public class Mesh/// : IRTModel
+     public class Mesh : ARTModel
     {
-        private object mutex;
+        private Dictionary<int,Vertex> Vertices;
 
-        Dictionary<int,Vertex> Vertices;
-
-        List<Face> Faces;
-        
+        private List<Face> Faces;
+ 
         public void AppendFace(Vertex v1, Vertex v2, Vertex v3)
         {
-            lock (mutex)
+            lock (SyncObj)
             {
                 Faces.Add(new Face(AppendVertex(v1), AppendVertex(v2), AppendVertex(v3)));
             }
@@ -41,7 +40,7 @@ namespace Raytracer.Model
             return sb.ToString();
         }
 
-        public void LoadModel(string src)
+        public override void LoadModel(string src)
         {
             RawMesh mesh = ReadObj(src);
 
@@ -75,7 +74,7 @@ namespace Raytracer.Model
               }
               );
             }
-            Console.WriteLine(ToString());
+          ///  Console.WriteLine(ToString());
         }
 
         private void BuildModelTree()
@@ -85,7 +84,7 @@ namespace Raytracer.Model
         
         private void AppendFace(Vertex v1, Vertex v2, Vertex v3, int matID)
         {
-            lock (mutex)
+            lock (SyncObj)
             {
                 Faces.Add(new Face(AppendVertex(v1), AppendVertex(v2), AppendVertex(v3), matID));
             }
@@ -101,56 +100,78 @@ namespace Raytracer.Model
             }
             return vertexHashCode;
         }
-
-        public Matrix4 Transform()
-        {
-            return Matrix4.Identity;
-        }
-
+        
         public bool Intersection(out Face face, out Vector3 barycentric, Ray ray)
         {
             face = new Face(-1,-1,-1);
 
             barycentric = Vector3.Zero;
-            
+
+            float distance = float.MaxValue;
+
             for (int i = 0 ; i < Faces.Count ; i++)
             {
                 if (ray.TriangleIntersection(out barycentric,Vertices[Faces[i].P1].Position.Xyz,
                                                              Vertices[Faces[i].P2].Position.Xyz,
                                                              Vertices[Faces[i].P3].Position.Xyz))
                 {
-                    face = Faces[i];
-                    return true;
+                    if (distance > barycentric.Z)
+                    {
+                        face = Faces[i];
+
+                        distance = barycentric.Z;
+                    }
                 }
             }
-            return false;
+
+            return face.P1 != -1;
         }
 
-        public PixelColor IntersectionColor(Ray ray)
+        public override PixelColor IntersectionColor(ref Ray ray)
+        {
+            Vector3 barycentric;
+
+            Face face;
+
+            if (Intersection(out face, out barycentric, ray))
+            {
+                Vector3 n = Vector3.BaryCentric(Vertices[face.P1].Normal.Xyz, 
+                                                Vertices[face.P2].Normal.Xyz,
+                                                Vertices[face.P3].Normal.Xyz,
+                                                barycentric.X, barycentric.Y);
+                ray.Length = barycentric.Z;
+          
+                byte color = (byte)(255*(ray.Direction.X * n.X +
+                                         ray.Direction.Y * n.Y +
+                                         ray.Direction.Z * n.Z));
+
+                return new PixelColor(color, color, color);
+            }
+
+            return new PixelColor(0,0,0);
+        }
+
+        public override void OnCamSpace(Camera cam, out Vector2 LU, out Vector2 RD)
         {
             throw new NotImplementedException();
         }
 
-        public Mesh()
+        public Mesh() : base()
         {
             Vertices = new Dictionary<int, Vertex>();
 
             Faces = new List<Face>();
+         }
 
-            mutex = new object();
-        }
-
-        public Mesh(string src)
+        public Mesh(string src) : base()
         {
             Vertices = new Dictionary<int, Vertex>();
 
             Faces= new List<Face>();
+            
+           LoadModel(src);
 
-            mutex = new object();
-
-            LoadModel(src);
-
-            BuildModelTree();
+           BuildModelTree();
         }
     }
 }

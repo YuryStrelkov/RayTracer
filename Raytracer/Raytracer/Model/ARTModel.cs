@@ -2,6 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Raytracer.Textures;
+using Raytracer.Scene;
 
 namespace Raytracer.Model
 {
@@ -248,6 +249,18 @@ namespace Raytracer.Model
             return (tmin <= tmax) && (tmax > 0.0f);
         }
 
+        public bool SurfaceIntersection(out float t, float shiftAlongNormal, Vector3 surfNormal)
+        {
+            t = (shiftAlongNormal + (surfNormal.X * Origin.X 
+                                   + surfNormal.Y * Origin.Y
+                                   + surfNormal.Z * Origin.Z)) 
+                / (surfNormal.X * Direction.X 
+                 + surfNormal.Y * Direction.Y
+                 + surfNormal.Z * Direction.Z);
+
+            return true;
+        }
+
         public Ray(Vector3 origin)
         {
             Origin = origin;
@@ -273,34 +286,92 @@ namespace Raytracer.Model
 
         private Matrix4 scale;
 
+        private Matrix4 transform;
+
+        private Vector3 rotatinV;//костыль
+
         public Matrix4 TranslationM { get { return translation; } }
 
         public Matrix4 RotationM { get { return rotation; } }
 
         public Matrix4 ScalingM { get { return scale; } }
 
+        public Matrix4 TransformM { get { return transform; } }
+
         public void Scaling(float x, float y, float z)
         {
             scale.M11 = x;
             scale.M22 = y;
             scale.M33 = z;
+
+            Update();
         }
 
         public void Translation(float x, float y, float z)
         {
-            scale.M14 = x;
-            scale.M24 = y;
-            scale.M34 = z;
+            scale.M14 += x;
+            scale.M24 += y;
+            scale.M34 += z;
+
+            Update();
         }
 
         public void Rotation(float x, float y, float z)
         {
-            rotation = Matrix4.CreateRotationX(z) * Matrix4.CreateRotationX(y) * Matrix4.CreateRotationX(x);
+            rotatinV.X += x;
+
+            rotatinV.Y += y;
+
+            rotatinV.Z += z;
+
+            rotation = Matrix4.CreateRotationX(rotatinV.X) * Matrix4.CreateRotationX(rotatinV.Y) * Matrix4.CreateRotationX(rotatinV.Z);
+
+            Update();
         }
 
-        public Matrix4 TransformM()
+        public Vector3 GetOrigin()
         {
-            return translation * rotation * scale;
+            return new Vector3(translation.M14, translation.M24, translation.M34);
+        }
+
+        public Vector3 GetScaling()
+        {
+            return new Vector3(scale.M11, scale.M22, scale.M33);
+        }
+
+        public Vector3 GetRotation()
+        {
+            return rotatinV;
+        }
+
+        private void Update()
+        {
+            transform = translation * rotation * scale;
+        }
+
+        public Transform(float x,float y, float z)
+        {
+            translation = new Matrix4(1, 0, 0, x,
+                                      0, 1, 0, y,
+                                      0, 0, 1, z,
+                                      0, 0, 0, 1);
+
+            scale     = new Matrix4(1, 0, 0, 0,
+                                    0, 1, 0, 0,
+                                    0, 0, 1, 0,
+                                    0, 0, 0, 1);
+
+            rotation  = new Matrix4(1, 0, 0, 0,
+                                    0, 1, 0, 0,
+                                    0, 0, 1, 0,
+                                    0, 0, 0, 1);
+
+            transform = new Matrix4(1, 0, 0, x,
+                                    0, 1, 0, y,
+                                    0, 0, 1, z,
+                                    0, 0, 0, 1);
+
+            rotatinV = new Vector3();
         }
 
         public Transform(Vector3 origin)
@@ -319,6 +390,11 @@ namespace Raytracer.Model
                                    0, 1, 0, 0,
                                    0, 0, 1, 0,
                                    0, 0, 0, 1);
+            transform = new Matrix4(1, 0, 0, origin.X,
+                                    0, 1, 0, origin.Y,
+                                    0, 0, 1, origin.Z,
+                                    0, 0, 0, 1);
+            rotatinV = new Vector3();
         }
     }
 
@@ -375,9 +451,9 @@ namespace Raytracer.Model
 
         public Material()
         {
-            Diffuse = new Texture(0, 0, 0);
-            Normals = new Texture(0, 0, 0);
-            Specular = new Texture(0, 0, 0);
+            Diffuse     = new Texture(0, 0, 0);
+            Normals     = new Texture(0, 0, 0);
+            Specular    = new Texture(0, 0, 0);
             Transparent = new Texture(0, 0, 0);
         }
 
@@ -409,14 +485,32 @@ namespace Raytracer.Model
         }
     }
 
-    public interface IRTModel
+    public abstract class ARTModel
     {
-        Transform GetTransform();
+        Transform t;
 
-        Material GetMaterial();
+        protected object SyncObj;
 
-        void LoadModel(string src);
+        public int MaterialID { get; set; }
 
-        PixelColor IntersectionColor(Ray ray);
+        public Transform GetTransform()
+        {
+            return t;
+        }
+
+        public abstract void OnCamSpace(Camera cam, out Vector2 LU, out Vector2 RD);
+
+        public abstract void LoadModel(string src);
+
+        public abstract PixelColor IntersectionColor(ref Ray ray);
+
+        public ARTModel()
+        {
+            t = new Transform(0,0,0);
+
+            SyncObj = new object();
+
+            MaterialID = -1;
+        }
     }
 }
