@@ -109,9 +109,23 @@ namespace Raytracer.Scene
 
         public void Render(ARTModel model, Camera cam)
         {
-            ClearCanvas();
+            ///ClearCanvas();
 
-            Parallel.For(0, CanvasTexture.Rows, (row) => 
+            Vector2 RD;
+
+            Vector2 LU;
+
+            model.OnCamSpace(cam, out LU,out RD);
+
+            int coloms0 = (int)(LU.X * (CanvasTexture.Coloms - 1));
+
+            int coloms1 = (int)(RD.X * (CanvasTexture.Coloms - 1));
+
+            int rows0   = (int)(LU.Y * (CanvasTexture.Coloms - 1));
+
+            int rows1   = (int)(RD.Y * (CanvasTexture.Coloms - 1));
+
+            Parallel.For(rows0, rows1, (row) => 
             {
                 float y = -1.0f + row / (CanvasTexture.Rows - 1.0f);
 
@@ -121,9 +135,9 @@ namespace Raytracer.Scene
 
                 PixelColor color = new PixelColor(0, 0, 0);
 
-                for (int cols = 0 ; cols < CanvasTexture.Coloms ; cols++)
+                for (int cols = coloms0; cols < coloms1; cols++)
                 {
-                         x = -1.0f + cols / (CanvasTexture.Coloms - 1.0f);
+                        x = -1.0f + cols / (CanvasTexture.Coloms - 1.0f);
 
                         Ray r = cam.GetViewRay(x, y);
  

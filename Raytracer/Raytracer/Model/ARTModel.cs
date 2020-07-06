@@ -102,8 +102,8 @@ namespace Raytracer.Model
         public Ray Reflection(Vector3 normal)
         {
             return new Ray(Origin + Direction * Length, Direction - 2 * (Direction.X * normal.X +
-                                                                          Direction.Y * normal.Y +
-                                                                          Direction.Z * normal.Z) * normal);
+                                                                         Direction.Y * normal.Y +
+                                                                         Direction.Z * normal.Z) * normal);
         }
 
         public Ray Refraction(Vector3 normal, float RI1, float RI2)
