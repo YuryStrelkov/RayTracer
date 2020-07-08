@@ -6,41 +6,48 @@ namespace Raytracer.Events
 {
     public enum MouseActionEvents
     {
-        Clique = 0,
+        Click = 0,
 
         Press = 1,
 
         Release = 2,
 
         Move = 3,
-
-        Drag = 4,
-
-        WheellRotation = 5
+        
+        WheellRotation = 4
     }
 
-    public abstract class MouseAction
+    public interface IMouseAction<ItemUnderControl>
     {
-        public abstract void Action(object sender, MouseEventArgs event_);
-
-        public Point MouseCoordinates(MouseEventArgs event_)
-        {
-            return event_.Location;
-        }
+        void Action(IMouseEvents<ItemUnderControl> sender, MouseEventArgs event_);
     }
 
-    public sealed class MouseEvents<T> where T : ContainerControl
+    public interface IMouseEvents<ItemUnderControl> 
     {
-        private class DummyEvent : MouseAction
+        Point MouseXY { get;}
+
+        Point MouseDXDY { get;}
+
+        bool Pressed { get;}
+
+        ItemUnderControl ContorlledItem { get;}
+
+        void AddEventProcessor(MouseActionEvents eventType, IMouseAction<ItemUnderControl> actionEvent);
+    }
+
+    public sealed class MouseEvents<T> : IMouseEvents<T> where T:Control
+    {
+        private class DummyEvent : IMouseAction<T>
         {
-            public override void Action(object sender, MouseEventArgs event_)
+            public  void Action(IMouseEvents<T> sender, MouseEventArgs event_)
             {
+
             }
         }
 
-        private T container;
+        public T ContorlledItem { get; private set; }
 
-        private Dictionary<MouseActionEvents, MouseAction> MouseActions;
+        private Dictionary<MouseActionEvents, IMouseAction<T>> MouseActions;
 
         public Point MouseXY { get; private set; }
 
@@ -48,65 +55,62 @@ namespace Raytracer.Events
 
         public bool Pressed { get; private set; }
 
-        public void AddEventProcessor(MouseActionEvents eventType, MouseAction actionEvent)
+        public void AddEventProcessor(MouseActionEvents eventType, IMouseAction<T> actionEvent)
         {
             MouseActions.Add(eventType, actionEvent);
         }
 
         public void MouseMove(object sender, MouseEventArgs e)
         {
-            MouseActions[MouseActionEvents.Move].Action(sender,e);
-            MouseXY = MouseActions[MouseActionEvents.Move].MouseCoordinates(e);
-        }
-
-        public void MouseDrag(object sender, MouseEventArgs e)
-        {
-            MouseActions[MouseActionEvents.Drag].Action(sender, e);
-            MouseXY = MouseActions[MouseActionEvents.Move].MouseCoordinates(e);
-        }
-
-        public void MouseClique(object sender, MouseEventArgs e)
-        {
-               Pressed = true;
-               MouseActions[MouseActionEvents.Clique].Action(sender, e);
-        }
-
-        public void MousePressed(object sender, MouseEventArgs e)
-        {
-            if (!Pressed)
+            if (Pressed)
             {
-                return;
+                MouseDXDY = new Point (e.X - MouseXY.X, e.Y - MouseXY.Y);
             }
-            MouseActions[MouseActionEvents.Press].Action(sender, e);
+
+            MouseActions[MouseActionEvents.Move]. Action(this, e);
+        }
+
+        public void MouseClick(object sender, MouseEventArgs e)
+        {
+               MouseActions[MouseActionEvents.Click].Action(this, e);
+        }
+
+        public void MouseDown(object sender, MouseEventArgs e)
+        {
+            Pressed = true;
+
+            MouseXY = e.Location;
+
+            MouseActions[MouseActionEvents.Press].Action(this, e);
         }
 
         public void MouseRelease(object sender, MouseEventArgs e)
         {
             Pressed = false;
-            MouseActions[MouseActionEvents.Release].Action(sender, e);
+
+            MouseActions[MouseActionEvents.Release].Action(this, e);
         }
 
         public void MouseWhell(object sender, MouseEventArgs e)
         {
-           MouseActions[MouseActionEvents.WheellRotation].Action(sender, e);
+           MouseActions[MouseActionEvents.WheellRotation].Action(this, e);
         }
 
         public MouseEvents(T parent)
         {
-            MouseActions = new Dictionary<MouseActionEvents, MouseAction>();
+            MouseActions = new Dictionary<MouseActionEvents, IMouseAction<T>>();
             DummyEvent dummy = new DummyEvent();
             MouseActions.Add(MouseActionEvents.Move, dummy);
-            MouseActions.Add(MouseActionEvents.Drag, dummy);
-            MouseActions.Add(MouseActionEvents.Clique, dummy);
+            MouseActions.Add(MouseActionEvents.Click, dummy);
             MouseActions.Add(MouseActionEvents.Press, dummy);
             MouseActions.Add(MouseActionEvents.Release, dummy);
             MouseActions.Add(MouseActionEvents.WheellRotation, dummy);
 
-            container.MouseMove += MouseMove;
-            container.MouseDown += MouseMove;
-            container.MouseClick += MouseClique;
-            container.MouseWheel += MouseWhell;
-            container.MouseUp += MouseRelease;
+            ContorlledItem.MouseMove += MouseMove;
+            ContorlledItem.MouseDown += MouseDown;
+            ContorlledItem.MouseClick += MouseClick;
+            ContorlledItem.MouseWheel += MouseWhell;
+            ContorlledItem.MouseUp += MouseRelease;
         }
 
     }
