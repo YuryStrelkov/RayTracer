@@ -1,8 +1,9 @@
-﻿using Raytracer.Model;
-using Raytracer.Model.SpecificModels;
-using Raytracer.Textures;
-using System;
+﻿using System;
 using System.Drawing;
+using System.Windows.Forms;
+using Raytracer.Scene;
+using Raytracer.Textures;
+
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -60,7 +61,7 @@ namespace Raytracer
             await TaskTestCountCheck();
         }
 
-
+        [STAThread]
         static void Main(string[] args)
         {
             ///TaskTestCountCheckAsync();
@@ -82,8 +83,12 @@ namespace Raytracer
 
             /// Mesh m = new Mesh("boxes.obj");
             Console.WriteLine("done...");
+
+            Application.EnableVisualStyles();
+
+            Application.Run(new SceneFrame());
+
             Console.ReadKey();
-          
         }
     }
 }

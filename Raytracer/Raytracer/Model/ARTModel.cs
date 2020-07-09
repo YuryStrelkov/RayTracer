@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Raytracer.Textures;
-using Raytracer.Scene;
+using Raytracer.Cameras;
 
 namespace Raytracer.Model
 {

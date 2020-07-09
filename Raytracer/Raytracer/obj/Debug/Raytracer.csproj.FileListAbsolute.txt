@@ -16,3 +16,5 @@ E:\GitHub\RayTracer\Raytracer\Raytracer\bin\Debug\OpenTK.pdb
 E:\GitHub\RayTracer\Raytracer\Raytracer\bin\Debug\OpenTK.xml
 E:\GitHub\RayTracer\Raytracer\Raytracer\obj\Debug\Raytracer.csprojResolveAssemblyReference.cache
 D:\GitHub\RayTracer\Raytracer\Raytracer\obj\Debug\Raytracer.csprojResolveAssemblyReference.cache
+D:\GitHub\RayTracer\Raytracer\Raytracer\obj\Debug\Raytracer.Scene.SceneFrame.resources
+D:\GitHub\RayTracer\Raytracer\Raytracer\obj\Debug\Raytracer.csproj.GenerateResource.Cache

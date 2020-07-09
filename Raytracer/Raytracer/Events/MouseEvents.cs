@@ -1,9 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using Raytracer.Scene;
+using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
 namespace Raytracer.Events
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public enum MouseActionEvents
     {
         Click = 0,
@@ -13,16 +18,16 @@ namespace Raytracer.Events
         Release = 2,
 
         Move = 3,
-        
+
         WheellRotation = 4
     }
 
-    public interface IMouseAction<ItemUnderControl>
+    public interface IMouseAction 
     {
-        void Action(IMouseEvents<ItemUnderControl> sender, MouseEventArgs event_);
+        void Action(IMouseEventsSource sender, MouseEventArgs event_);
     }
 
-    public interface IMouseEvents<ItemUnderControl> 
+    public interface IMouseEventsSource 
     {
         Point MouseXY { get;}
 
@@ -30,24 +35,24 @@ namespace Raytracer.Events
 
         bool Pressed { get;}
 
-        ItemUnderControl ContorlledItem { get;}
+        Control ContorlledItem { get;}
 
-        void AddEventProcessor(MouseActionEvents eventType, IMouseAction<ItemUnderControl> actionEvent);
+        void AddEvent(MouseActionEvents eventType, IMouseAction actionEvent);
     }
 
-    public sealed class MouseEvents<T> : IMouseEvents<T> where T:Control
+    public sealed class MouseEvents : IMouseEventsSource
     {
-        private class DummyEvent : IMouseAction<T>
+        private class DummyEvent : IMouseAction
         {
-            public  void Action(IMouseEvents<T> sender, MouseEventArgs event_)
+            public  void Action(IMouseEventsSource sender, MouseEventArgs event_)
             {
 
             }
         }
 
-        public T ContorlledItem { get; private set; }
+        public Control ContorlledItem { get; private set; }
 
-        private Dictionary<MouseActionEvents, IMouseAction<T>> MouseActions;
+        private Dictionary<MouseActionEvents, IMouseAction> MouseActions;
 
         public Point MouseXY { get; private set; }
 
@@ -55,7 +60,7 @@ namespace Raytracer.Events
 
         public bool Pressed { get; private set; }
 
-        public void AddEventProcessor(MouseActionEvents eventType, IMouseAction<T> actionEvent)
+        public void AddEvent(MouseActionEvents eventType, IMouseAction actionEvent)
         {
             MouseActions.Add(eventType, actionEvent);
         }
@@ -65,6 +70,7 @@ namespace Raytracer.Events
             if (Pressed)
             {
                 MouseDXDY = new Point (e.X - MouseXY.X, e.Y - MouseXY.Y);
+                Console.WriteLine(MouseDXDY.ToString());
             }
 
             MouseActions[MouseActionEvents.Move]. Action(this, e);
@@ -96,15 +102,19 @@ namespace Raytracer.Events
            MouseActions[MouseActionEvents.WheellRotation].Action(this, e);
         }
 
-        public MouseEvents(T parent)
+        public MouseEvents(Control parent)
         {
-            MouseActions = new Dictionary<MouseActionEvents, IMouseAction<T>>();
+            ContorlledItem = parent;
+
+            MouseActions = new Dictionary<MouseActionEvents, IMouseAction>();
+
             DummyEvent dummy = new DummyEvent();
-            MouseActions.Add(MouseActionEvents.Move, dummy);
-            MouseActions.Add(MouseActionEvents.Click, dummy);
-            MouseActions.Add(MouseActionEvents.Press, dummy);
-            MouseActions.Add(MouseActionEvents.Release, dummy);
-            MouseActions.Add(MouseActionEvents.WheellRotation, dummy);
+
+            AddEvent(MouseActionEvents.Move, dummy);
+            AddEvent(MouseActionEvents.Click, dummy);
+            AddEvent(MouseActionEvents.Press, dummy);
+            AddEvent(MouseActionEvents.Release, dummy);
+            AddEvent(MouseActionEvents.WheellRotation, dummy);
 
             ContorlledItem.MouseMove += MouseMove;
             ContorlledItem.MouseDown += MouseDown;
