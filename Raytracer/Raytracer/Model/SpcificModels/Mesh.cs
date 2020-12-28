@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using static Raytracer.Model.ObjMeshReader;
-using Raytracer.Scene;
+using Raytracer.Cameras;
 
 namespace Raytracer.Model.SpecificModels
 {
@@ -154,6 +154,14 @@ namespace Raytracer.Model.SpecificModels
         public override void OnCamSpace(Camera cam, out Vector2 LU, out Vector2 RD)
         {
             throw new NotImplementedException();
+        }
+
+        public override ARTModel Copy()
+        {
+            Mesh m = new Mesh();
+            m.Vertices = new Dictionary<int, Vertex>(Vertices);
+            m.Faces = new List<Face>(Faces);
+            return m;
         }
 
         public Mesh() : base()

@@ -17,9 +17,9 @@ namespace Raytracer.Scene
             CanvasTexture.ClearTexture();
         }
 
-        public void ResolveToBitmap(ref Bitmap frame)
+        public void ResolveToBitmap(Bitmap frame)
         {
-            CanvasTexture.ToBitmap(ref frame);
+            CanvasTexture.ToBitmap( frame);
         }
 
         public void Render(ARTModel model, Camera cam)

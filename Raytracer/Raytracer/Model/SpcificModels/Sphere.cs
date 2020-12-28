@@ -2,6 +2,7 @@
 using OpenTK;
 using Raytracer.Scene;
 using System;
+using Raytracer.Cameras;
 
 namespace Raytracer.Model.SpecificModels
 {
@@ -49,6 +50,11 @@ namespace Raytracer.Model.SpecificModels
             LU = new Vector2(Math.Min(maxB.X, minB.X), Math.Min(maxB.Y, minB.Y));
 
             RD = new Vector2(Math.Max(maxB.X, minB.X), Math.Max(maxB.Y, minB.Y));
+        }
+
+        public override ARTModel Copy()
+        {
+            return new Sphere(Radius, GetTransform().GetOrigin());
         }
 
         public Sphere(float R, Vector3 orig):base()

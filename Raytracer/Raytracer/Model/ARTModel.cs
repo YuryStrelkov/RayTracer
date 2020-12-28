@@ -3,6 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 using Raytracer.Textures;
 using Raytracer.Cameras;
+using Raytracer.Model.Nodes;
 
 namespace Raytracer.Model
 {
@@ -485,13 +486,13 @@ namespace Raytracer.Model
         }
     }
 
-    public abstract class ARTModel
+    public abstract class ARTModel:ICopy<ARTModel>
     {
         Transform t;
 
         protected object SyncObj;
 
-        public int MaterialID { get; set; }
+  //      public int MaterialID { get; set; }
 
         public Transform GetTransform()
         {
@@ -503,6 +504,7 @@ namespace Raytracer.Model
         public abstract void LoadModel(string src);
 
         public abstract PixelColor IntersectionColor(ref Ray ray);
+        public abstract ARTModel Copy();
 
         public ARTModel()
         {
@@ -510,7 +512,7 @@ namespace Raytracer.Model
 
             SyncObj = new object();
 
-            MaterialID = -1;
+          //  MaterialID = -1;
         }
     }
 }

@@ -149,6 +149,12 @@ namespace Raytracer.Cameras
             view.M24 += view.M21 * step;
 
             view.M34 += view.M31 * step;
+            
+        }
+
+        public override int GetHashCode()
+        {
+            return view.GetHashCode() << Projection.GetHashCode();
         }
 
         public Ray GetViewRay(float x, float y)//x and y belongs [-1,1];
@@ -181,5 +187,40 @@ namespace Raytracer.Cameras
 
             Projection = Matrix4.CreatePerspectiveFieldOfView(fov_, aspect, 0.1f, 100000);
         }
+        
+        public Camera(float fov_, float aspect, Vector3 orig, Vector3 forward)
+        {
+            fov = 1 / (float)Math.Tan(fov_ / 2); ;
+
+            Aspect = aspect;
+
+            view = new Matrix4(1, 0, 0, orig.X,
+                               0, 1, 0, orig.Y,
+                               0, 0, 1, orig.Z,
+                               0, 0, 0, 1);
+
+            forward.Normalize();
+
+            Vector3 right = Vector3.Cross(Vector3.UnitY, forward);
+
+            right.Normalize();
+
+            Vector3 up = Vector3.Cross(forward, right);
+
+            view.M11 = right.X;
+            view.M21 = right.Y;
+            view.M31 = right.Z;
+
+            view.M12 = up.X;
+            view.M22 = up.Y;
+            view.M32 = up.Z;
+
+            view.M13 = forward.X;
+            view.M23 = forward.Y;
+            view.M33 = forward.Z;
+
+            Projection = Matrix4.CreatePerspectiveFieldOfView(fov_, aspect, 0.1f, 100000);
+        }
+
     }
 }

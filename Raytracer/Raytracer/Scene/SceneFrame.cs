@@ -10,7 +10,28 @@ namespace Raytracer.Scene
         public PictureBox ViewPort { get; private set;}
 
         private MouseEvents pictureBoxEvents;
-        
+
+        private SceneRT scn;
+
+        public void UpdateFrame(float dt)
+        {
+
+        }
+
+        public void DrawFrame()
+        {
+            while (true)
+            {
+                scn.Draw((Bitmap)ViewPort.Image);
+            }
+        }
+
+        public void ClearFrame()
+        {
+             
+        }
+
+
         public SceneFrame():base()
         {
             ViewPort = new PictureBox();
@@ -19,7 +40,7 @@ namespace Raytracer.Scene
 
             ViewPort.Dock = DockStyle.Fill;
 
-            ViewPort.Image = new Bitmap("checkerboard-rainbow.png");
+            ViewPort.Image = new Bitmap(800, 600);
 
             pictureBoxEvents = new MouseEvents(ViewPort);
             

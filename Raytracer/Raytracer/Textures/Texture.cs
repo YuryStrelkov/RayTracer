@@ -88,7 +88,7 @@ namespace Raytracer.Textures
             return strtide;
         }
 
-        public void ToBitmap(ref Bitmap bm)
+        public void ToBitmap( Bitmap bm)
         {
             if (bm.Width != Coloms)
             {

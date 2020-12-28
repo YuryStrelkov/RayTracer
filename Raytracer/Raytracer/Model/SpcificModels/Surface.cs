@@ -2,6 +2,7 @@
 using OpenTK;
 using Raytracer.Scene;
 using Raytracer.Textures;
+using Raytracer.Cameras;
 
 namespace Raytracer.Model.SpcificModels
 {
@@ -101,11 +102,18 @@ namespace Raytracer.Model.SpcificModels
             RD = new Vector2(Math.Max(LU3.X, RD3.X), Math.Max(LU3.Y, RD3.Y));
         }
 
+
+        public override ARTModel Copy()
+        {
+            return new Surface(D, ABC.Xyz);
+        }
+
+
         public Surface(float shiftAlongNormal, Vector3 surfNormal):base()
         {
             surfNormal.Normalize();
 
-            GetTransform().Translation(surfNormal.X*D, surfNormal.Y * D, surfNormal.Z * D);
+            GetTransform().Translation(surfNormal.X * shiftAlongNormal, surfNormal.Y * shiftAlongNormal, surfNormal.Z * shiftAlongNormal);
 
             ABC = new Vector4(surfNormal.X, surfNormal.Y, surfNormal.Z, 0);
         }

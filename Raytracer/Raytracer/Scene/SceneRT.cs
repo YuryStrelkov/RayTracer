@@ -1,11 +1,15 @@
-﻿using Raytracer.Model;
+﻿using OpenTK;
+using Raytracer.Cameras;
+using Raytracer.Model;
+using Raytracer.Model.Nodes;
+using Raytracer.Model.SpecificModels;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
 
 namespace Raytracer.Scene
 {
-    public class SceneRT
+    public class SceneRT : NodeList<ARTModel>
     {
         public static int FPS60 = 17;//ms
 
@@ -13,10 +17,10 @@ namespace Raytracer.Scene
 
         public static int FPS120 = 120;//8ms
 
-        private List<ARTModel> models;
+        public int ActiveCameraID { get; private set; }
 
-        private Camera cam;
-
+        private Dictionary<int,Camera> Cameras;
+        
         private Canvas canvas;
 
         private Timer RenderTimer;
@@ -25,22 +29,21 @@ namespace Raytracer.Scene
         {
         }
         
-        private void ResolveToBitmap(ref Bitmap bmp)
+        private void ResolveToBitmap(Bitmap bmp)
         {
-            canvas.ResolveToBitmap(ref bmp);
+            canvas.ResolveToBitmap( bmp);
         }
 
         private  void Draw(object o)
         {
              Update();
-            //canvas.Render(models, cam);
+             //canvas.Render(models, cam);
         }
 
 
-        public  void Draw(ref Bitmap bmp)
+        public  void Draw(Bitmap bmp)
         {
-            ResolveToBitmap(ref bmp);
-            
+            ResolveToBitmap(bmp);
         }
 
         public void LoadScn (string src)
@@ -50,22 +53,30 @@ namespace Raytracer.Scene
 
         public void AddModel(string src)
         {
-
+            AddNode(new Mesh(src));
         }
 
         public void AddModel(ARTModel m)
         {
+            AddNode(m);
+        }
 
+        public void AddCamera(Vector3 origin, Vector3 forward, float fov, float aspect)
+        {
+            Camera c = new Camera(fov, aspect, origin, forward);
+
+            ActiveCameraID = c.GetHashCode();
+
+            Cameras.Add(ActiveCameraID, c);
         }
 
         public SceneRT(int w, int h)
         {
-
             RenderTimer = new Timer(new TimerCallback(Draw), null, 0, FPS30);
 
-            models = new List<ARTModel>();
+            Cameras = new Dictionary<int, Camera>();
 
-            cam = new Camera(90, 1.5f, new OpenTK.Vector3(0, 0, 0));
+            AddCamera(new Vector3(0, 0, 0), new Vector3(0, 0, 1), 90, h * 1.0f / w);
 
             canvas = new Canvas(w,h);
         }

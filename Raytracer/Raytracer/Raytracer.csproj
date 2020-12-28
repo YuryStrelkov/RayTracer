@@ -56,6 +56,9 @@
     <Compile Include="Events\KeyBoardEvents.cs" />
     <Compile Include="Events\MouseEvents.cs" />
     <Compile Include="Model\ARTModel.cs" />
+    <Compile Include="Model\Nodes\Node.cs" />
+    <Compile Include="Model\Nodes\InstanceCounter.cs" />
+    <Compile Include="Model\Nodes\NodeList.cs" />
     <Compile Include="Model\SpcificModels\Mesh.cs" />
     <Compile Include="Model\ObjMeshReader.cs" />
     <Compile Include="Model\SpcificModels\Sphere.cs" />
